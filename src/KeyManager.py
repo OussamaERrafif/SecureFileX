@@ -1,4 +1,4 @@
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend
 import os
@@ -82,12 +82,11 @@ class KeyManager:
             The encrypted symmetric key.
         """
         # Encrypt symmetric key using RSA public key
-        self.symmetric_key = symmetric_key
         encrypted_key = self.public_key.encrypt(
             symmetric_key,
             padding.OAEP(
-                mgf=padding.MGF1(algorithm=serialization.Algorithm.SHA256),
-                algorithm=serialization.Algorithm.SHA256,
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
                 label=None
             )
         )
@@ -107,8 +106,8 @@ class KeyManager:
         decrypted_key = self.private_key.decrypt(
             encrypted_key,
             padding.OAEP(
-                mgf=padding.MGF1(algorithm=serialization.Algorithm.SHA256),
-                algorithm=serialization.Algorithm.SHA256,
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
                 label=None
             )
         )

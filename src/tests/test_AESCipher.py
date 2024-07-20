@@ -2,7 +2,7 @@ import os
 import unittest
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from AESCipher import AESCipher
+from src.AESCipher import AESCipher
 
 class AESCipherTests(unittest.TestCase):
     def test_encrypt_decrypt(self):
