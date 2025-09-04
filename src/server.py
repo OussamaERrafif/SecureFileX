@@ -33,6 +33,11 @@ def start_server(host, port):
                     if encrypted_data:
                         decrypted_data = aes_cipher.decrypt(encrypted_data)
                         print(f"Decrypted data from client: {decrypted_data.decode()}")
+                        
+                        # Send acknowledgment back to client
+                        response = b"Message received successfully"
+                        encrypted_response = aes_cipher.encrypt(response)
+                        conn.sendall(encrypted_response)
                 except Exception as e:
                     print(f"An error occurred: {e}")
 

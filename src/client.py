@@ -33,15 +33,23 @@ def start_client(host, port):
             aes_cipher = AESCipher(key_manager.get_symmetric_key())
 
             while True:
-                buffer_data = input("Enter message to send to server: ").encode()
+                message = input("Enter message to send to server (type 'quit' to exit): ")
+                if message.lower() == 'quit':
+                    break
+                    
+                buffer_data = message.encode()
                 encrypted_data = aes_cipher.encrypt(buffer_data)
                 client_socket.sendall(encrypted_data)
-                print(f"Sent encrypted data to server: {buffer_data.decode()}")
+                print(f"Sent encrypted data to server: {message}")
 
+                # Wait for response from server
                 encrypted_response = client_socket.recv(4096)
                 if encrypted_response:
                     decrypted_response = aes_cipher.decrypt(encrypted_response)
-                    print(f"Decrypted response from server: {decrypted_response.decode()}")
+                    print(f"Server response: {decrypted_response.decode()}")
+                else:
+                    print("No response from server")
+                    break
 
         except Exception as e:
             print(f"An error occurred: {e}")
