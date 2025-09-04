@@ -1,37 +1,40 @@
-﻿# SecureFileX
+# SecureFileX
 
 ## Project Overview
 
-The Secure File Transfer System is designed to ensure the confidentiality, integrity, and authenticity of files being transferred over a network. Leveraging robust cryptographic techniques and secure coding practices, this project demonstrates proficiency in cryptography and network programming.
+SecureFileX is a comprehensive secure file transfer system designed to ensure the confidentiality, integrity, and authenticity of files being transferred over a network. Leveraging robust cryptographic techniques and secure coding practices, this project demonstrates proficiency in cybersecurity, cryptography, and network programming.
 
-## Key Components
+## Key Features
 
-### Encryption
+### 🔐 Security Features
+- **End-to-End Encryption**: AES-256 encryption for file contents with RSA key exchange
+- **File Integrity Verification**: SHA-256 hash verification for all transfers
+- **User Authentication**: Session-based authentication with secure password hashing
+- **Secure Communication**: All network traffic is encrypted using hybrid cryptography
 
-- **End-to-End Encryption**: Secure file contents during transfer.
-- **Encryption Algorithms**: Utilize robust algorithms such as AES for symmetric encryption and RSA for asymmetric encryption.
+### 📁 File Transfer
+- **Chunked Transfer**: Memory-efficient file transfer with progress monitoring
+- **Large File Support**: Configurable file size limits (default: 100MB)
+- **Integrity Checking**: Automatic verification of file integrity after transfer
+- **Safe File Handling**: Secure file path validation and sanitization
 
-### Authentication
+### 👤 User Management
+- **Multi-user Support**: Username/password authentication system
+- **Session Management**: Token-based sessions with configurable timeout
+- **Security Logging**: Comprehensive logging of security events
 
-- **Authorized Access**: Ensure that only authorized users can send and receive files.
-- **Authentication Mechanisms**: Implement public-key infrastructure (PKI) or token-based authentication.
-
-### Integrity Checks
-
-- **File Integrity**: Ensure files are not altered during transfer.
-- **Hashing Algorithms**: Use algorithms like SHA-256 to create and verify file hashes.
-
-### Secure Channels
-
-- **Secure Protocols**: Utilize protocols such as TLS to protect data in transit.
-- **Encrypted Communication**: Ensure the communication channel is encrypted and authenticated.
+### ⚙️ Configuration & Management
+- **Configurable Settings**: JSON-based configuration for all components
+- **Comprehensive Logging**: Multi-level logging with file rotation
+- **CLI Interface**: Command-line interface for easy operation
+- **Validation**: Configuration validation and error checking
 
 ## Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/secure-file-transfer.git
-   cd secure-file-transfer
+   git clone https://github.com/OussamaERrafif/SecureFileX.git
+   cd SecureFileX
    ```
 
 2. Create a virtual environment:
@@ -47,35 +50,194 @@ The Secure File Transfer System is designed to ensure the confidentiality, integ
 
 ## Usage
 
-1. **Start the server**:
-   ```bash
-   python server.py
-   ```
+### Quick Start
 
-2. **Start the client**:
-   ```bash
-   python client.py
-   ```
+**Start the server:**
+```bash
+python securefx.py server
+```
 
-3. **Transfer Files**:
-   - Use the user interface to select files for transfer.
-   - Enter the required credentials.
-   - Monitor the transfer status via the interface.
+**Connect with client:**
+```bash
+python securefx.py client
+```
+
+Default credentials: `admin` / `admin123`
+
+### Command Line Interface
+
+SecureFileX provides a comprehensive CLI for all operations:
+
+**Server Operations:**
+```bash
+# Start server with default settings
+python securefx.py server
+
+# Start server on specific host/port
+python securefx.py server --host 0.0.0.0 --port 8080
+
+# Validate configuration before starting
+python securefx.py server --validate-config
+```
+
+**Client Operations:**
+```bash
+# Interactive client mode
+python securefx.py client
+
+# Upload a file directly
+python securefx.py client --upload myfile.txt
+
+# Connect to specific server
+python securefx.py client --host 192.168.1.100 --port 8080
+```
+
+**Configuration Management:**
+```bash
+# Show current configuration
+python securefx.py config --show
+
+# Validate configuration
+python securefx.py config --validate
+```
+
+**User Management:**
+```bash
+# Create new user
+python securefx.py user create newuser
+
+# List all users
+python securefx.py user list
+```
+
+### Interactive Client Commands
+
+In interactive mode, the client supports these commands:
+- `upload <file_path>` - Upload a file to the server
+- `message <text>` - Send a text message to the server
+- `quit` - Exit the client
+
+## Architecture
+
+### Core Components
+
+1. **AESCipher.py**: AES encryption/decryption with CBC mode
+2. **KeyManager.py**: RSA key generation and symmetric key management
+3. **FileHandler.py**: Secure file operations with integrity verification
+4. **Authenticator.py**: User authentication and session management
+5. **Logger.py**: Comprehensive logging system
+6. **Config.py**: Configuration management
+7. **file_server.py**: Secure file transfer server
+8. **file_client.py**: Secure file transfer client
+9. **securefx.py**: Command-line interface
+
+### Security Architecture
+
+```
+Client                    Server
+  |                         |
+  |--- RSA Public Key ----->|
+  |<-- RSA Public Key ------|
+  |                         |
+  |-- Encrypted AES Key --->|
+  |                         |
+  |-- Authentication ------>|
+  |<-- Session Token -------|
+  |                         |
+  |-- Encrypted Commands -->|
+  |<-- Encrypted Responses -|
+```
+
+### Encryption Process
+
+1. **Key Exchange**: RSA-2048 for secure AES key exchange
+2. **Symmetric Encryption**: AES-256-CBC for all data transfer
+3. **Integrity**: SHA-256 hashing for file verification
+4. **Authentication**: Salted password hashing with session tokens
+
+## Configuration
+
+The system uses a JSON configuration file (`config.json`) with three main sections:
+
+```json
+{
+  "server": {
+    "host": "localhost",
+    "port": 12345,
+    "upload_dir": "uploads",
+    "max_file_size": 104857600,
+    "session_timeout": 3600,
+    "max_connections": 10,
+    "log_level": "INFO",
+    "require_authentication": true
+  },
+  "client": {
+    "default_host": "localhost",
+    "default_port": 12345,
+    "chunk_size": 8192,
+    "connection_timeout": 30,
+    "retry_attempts": 3,
+    "log_level": "INFO"
+  },
+  "security": {
+    "rsa_key_size": 2048,
+    "aes_key_size": 32,
+    "password_min_length": 6,
+    "max_login_attempts": 3,
+    "lockout_duration": 300,
+    "hash_algorithm": "sha256"
+  }
+}
+```
+
+## Logging
+
+The system provides comprehensive logging with multiple levels:
+
+- **Application Logs**: `logs/server.log`, `logs/client.log`
+- **Security Events**: `logs/security.log`
+- **CLI Operations**: `logs/cli.log`
+
+Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+## Testing
+
+Run the test suite:
+```bash
+python -m unittest src.tests.test_AESCipher src.tests.test_KeyManager src.tests.test_FileHandler -v
+```
+
+All tests include:
+- AES encryption/decryption validation
+- RSA key management verification
+- File integrity and hash verification
+- Error handling and edge cases
+
+## Security Considerations
+
+- **Encryption**: Uses industry-standard AES-256 and RSA-2048
+- **Key Management**: Secure key generation and exchange
+- **Authentication**: Salted password hashing with session management
+- **File Validation**: SHA-256 integrity verification
+- **Secure Coding**: Input validation, path sanitization, error handling
+- **Logging**: Comprehensive security event logging
 
 ## Dependencies
 
-- Python 3.x
-- cryptography
-- [Add any other libraries used]
+- Python 3.7+
+- cryptography==42.0.8
+- cffi==1.16.0
+- pycparser==2.22
 
 ## Contributing
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -am 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a new Pull Request.
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature-branch`)
+3. Make your changes
+4. Run tests to ensure functionality
+5. Commit your changes (`git commit -am 'Add new feature'`)
+6. Push to the branch (`git push origin feature-branch`)
+7. Create a new Pull Request
 
 ## License
 
@@ -83,5 +245,14 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
-- [cryptography](https://cryptography.io/en/latest/) library for providing the tools to implement encryption.
-- Community and contributors for their support and contributions.
+- [cryptography](https://cryptography.io/en/latest/) library for providing robust cryptographic tools
+- Community and contributors for their support and contributions
+
+## Future Enhancements
+
+- File download functionality
+- Multi-threaded server support
+- Web-based user interface
+- Database integration for user management
+- File compression before encryption
+- Rate limiting and DDoS protection

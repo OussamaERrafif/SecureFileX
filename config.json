@@ -1,0 +1,28 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 12345,
+    "upload_dir": "uploads",
+    "max_file_size": 104857600,
+    "session_timeout": 3600,
+    "max_connections": 10,
+    "log_level": "INFO",
+    "require_authentication": true
+  },
+  "client": {
+    "default_host": "localhost",
+    "default_port": 12345,
+    "chunk_size": 8192,
+    "connection_timeout": 30,
+    "retry_attempts": 3,
+    "log_level": "INFO"
+  },
+  "security": {
+    "rsa_key_size": 2048,
+    "aes_key_size": 32,
+    "password_min_length": 6,
+    "max_login_attempts": 3,
+    "lockout_duration": 300,
+    "hash_algorithm": "sha256"
+  }
+}

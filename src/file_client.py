@@ -5,6 +5,8 @@ import getpass
 from AESCipher import AESCipher  
 from KeyManager import KeyManager
 from FileHandler import FileHandler
+from Logger import get_logger
+from Config import get_config
 
 
 class SecureFileTransferClient:
@@ -12,19 +14,28 @@ class SecureFileTransferClient:
     Secure file transfer client with encryption, authentication, and integrity verification.
     """
     
-    def __init__(self, host='localhost', port=12345):
-        self.host = host
-        self.port = port
+    def __init__(self, host=None, port=None):
+        self.config = get_config()
+        self.host = host or self.config.client_config.default_host
+        self.port = port or self.config.client_config.default_port
         self.key_manager = KeyManager()
         self.aes_cipher = None
         self.session_token = None
         self.username = None
+        self.logger = get_logger('Client')
     
     def connect(self):
         """Connect to the file transfer server."""
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.host, self.port))
-        print(f"Connected to server at {self.host}:{self.port}")
+        self.socket.settimeout(self.config.client_config.connection_timeout)
+        
+        try:
+            self.socket.connect((self.host, self.port))
+            self.logger.info(f"Connected to server at {self.host}:{self.port}")
+            print(f"Connected to server at {self.host}:{self.port}")
+        except Exception as e:
+            self.logger.error(f"Failed to connect to {self.host}:{self.port}: {e}")
+            raise Exception(f"Connection failed: {e}")
         
         # Receive RSA public key from server
         rsa_public_key_data = self.socket.recv(4096)
@@ -48,6 +59,7 @@ class SecureFileTransferClient:
         if not self.authenticate():
             raise Exception("Authentication failed")
         
+        self.logger.info(f"Authenticated as user: {self.username}")
         print(f"Authenticated as user: {self.username}")
     
     def authenticate(self):
@@ -122,6 +134,7 @@ class SecureFileTransferClient:
     def upload_file(self, file_path):
         """Upload a file to the server with integrity verification."""
         if not os.path.exists(file_path):
+            self.logger.error(f"File not found: {file_path}")
             print(f"Error: File {file_path} not found")
             return False
         
@@ -129,8 +142,16 @@ class SecureFileTransferClient:
             # Calculate file metadata
             filename = os.path.basename(file_path)
             file_size = FileHandler.get_file_size(file_path)
+            
+            # Check file size limit
+            if file_size > self.config.server_config.max_file_size:
+                self.logger.error(f"File too large: {file_size} bytes")
+                print(f"Error: File too large ({file_size} bytes). Max size: {self.config.server_config.max_file_size} bytes")
+                return False
+            
             file_hash = FileHandler.calculate_file_hash(file_path)
             
+            self.logger.info(f"Uploading {filename} ({file_size} bytes)")
             print(f"Uploading {filename} ({file_size} bytes)")
             print(f"File hash: {file_hash}")
             
@@ -146,12 +167,15 @@ class SecureFileTransferClient:
             # Wait for server ready response
             response = self.receive_response()
             if response.get('status') != 'ready':
+                self.logger.error(f"Server not ready: {response.get('message')}")
                 print(f"Server not ready: {response.get('message', 'Unknown error')}")
                 return False
             
             # Send file chunks
             total_sent = 0
-            for chunk in FileHandler.read_file_chunks(file_path, chunk_size=4096):
+            chunk_size = self.config.client_config.chunk_size
+            
+            for chunk in FileHandler.read_file_chunks(file_path, chunk_size=chunk_size):
                 encrypted_chunk = self.aes_cipher.encrypt(chunk)
                 self.socket.sendall(encrypted_chunk)
                 total_sent += len(chunk)
@@ -164,13 +188,16 @@ class SecureFileTransferClient:
             # Wait for upload completion response
             response = self.receive_response()
             if response.get('status') == 'success':
+                self.logger.info(f"Upload successful: {filename}")
                 print(f"✓ {response.get('message', 'File uploaded successfully')}")
                 return True
             else:
+                self.logger.error(f"Upload failed: {response.get('message')}")
                 print(f"✗ Upload failed: {response.get('message', 'Unknown error')}")
                 return False
                 
         except Exception as e:
+            self.logger.error(f"Error uploading file {file_path}: {e}")
             print(f"Error uploading file: {e}")
             return False
     
