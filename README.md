@@ -31,6 +31,14 @@ SecureFileX is a comprehensive secure file transfer system designed to ensure th
 - **CLI Interface**: Command-line interface for easy operation
 - **Validation**: Configuration validation and error checking
 
+## Documentation
+
+- **[README.md](README.md)** - Main documentation (you are here)
+- **[EXAMPLES.md](EXAMPLES.md)** - Detailed usage examples and tutorials
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
+- **[LICENSE](LICENSE)** - MIT License
+
 ## Installation
 
 1. Clone the repository:
@@ -51,6 +59,15 @@ SecureFileX is a comprehensive secure file transfer system designed to ensure th
    ```
 
 ## Usage
+
+### Quick Start Demo
+
+Run the demo script to see all features:
+```bash
+python demo.py
+```
+
+This will display feature overview, create sample files, and show usage examples.
 
 ### Quick Start
 
