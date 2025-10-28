@@ -6,7 +6,6 @@ Demonstrates the key features of SecureFileX
 
 import os
 import tempfile
-import time
 
 
 def print_section(title):

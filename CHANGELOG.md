@@ -164,14 +164,15 @@ SecureFileX> quit                   # Existing
 
 ### Future Roadmap
 
-Planned enhancements for future releases:
-
+#### Short-term Goals (Next Release)
 - [ ] Multi-threaded server support for concurrent client handling
+- [ ] Rate limiting and DDoS protection
+- [ ] File versioning and metadata tracking
+
+#### Long-term Goals
 - [ ] Web-based user interface
 - [ ] Database integration for user management
 - [ ] File compression before encryption
-- [ ] Rate limiting and DDoS protection
-- [ ] File versioning and metadata tracking
 - [ ] Automated file cleanup policies
 - [ ] Support for file synchronization
 - [ ] End-to-end encrypted chat functionality
