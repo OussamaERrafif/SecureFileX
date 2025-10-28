@@ -5,15 +5,6 @@ from AESCipher import AESCipher
 from KeyManager import KeyManager
 from FileHandler import FileHandler
 from Authenticator import SimpleAuthenticator, AuthenticationMixin
-
-
-import socket
-import json
-import os
-from AESCipher import AESCipher  
-from KeyManager import KeyManager
-from FileHandler import FileHandler
-from Authenticator import SimpleAuthenticator, AuthenticationMixin
 from Logger import get_logger
 from Config import get_config
 

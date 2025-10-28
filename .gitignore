@@ -25,6 +25,9 @@ wheels/
 venv/
 env/
 ENV/
+Lib/
+Scripts/
+pyvenv.cfg
 
 # Cryptographic keys and sensitive files
 *.pem
@@ -33,9 +36,17 @@ ENV/
 rsa_public_key.pem
 symmetric_key.bin
 public_key.pem
+received_public_key.pem
+
+# User data
+users.json
+
+# Upload directory
+uploads/
 
 # Logs
 *.log
+logs/
 
 # IDE files
 .vscode/
