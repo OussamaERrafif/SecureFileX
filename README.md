@@ -29,11 +29,13 @@ SecureFileX is a comprehensive secure file transfer system designed to ensure th
 - **Configurable Settings**: JSON-based configuration for all components
 - **Comprehensive Logging**: Multi-level logging with file rotation
 - **CLI Interface**: Command-line interface for easy operation
+- **GUI Applications**: User-friendly graphical interfaces for client and server
 - **Validation**: Configuration validation and error checking
 
 ## Documentation
 
 - **[README.md](README.md)** - Main documentation (you are here)
+- **[GUI_README.md](GUI_README.md)** - GUI applications documentation and usage
 - **[EXAMPLES.md](EXAMPLES.md)** - Detailed usage examples and tutorials
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
@@ -60,7 +62,20 @@ SecureFileX is a comprehensive secure file transfer system designed to ensure th
 
 ## Usage
 
-### Quick Start Demo
+### Quick Start
+
+The easiest way to get started:
+```bash
+python quickstart.py
+```
+
+This interactive script will:
+- Check and install dependencies
+- Set up directories
+- Create default admin user
+- Provide a menu to launch any component
+
+### Demo
 
 Run the demo script to see all features:
 ```bash
@@ -69,7 +84,32 @@ python demo.py
 
 This will display feature overview, create sample files, and show usage examples.
 
-### Quick Start
+### Graphical User Interface (GUI)
+
+SecureFileX now includes user-friendly GUI applications:
+
+**Launch the unified GUI launcher:**
+```bash
+python gui_launcher.py
+```
+
+**Or launch directly:**
+```bash
+# Start GUI Client
+python gui_client.py
+
+# Start GUI Server
+python gui_server.py
+```
+
+**Note:** GUI applications require tkinter. On Linux, install with:
+```bash
+sudo apt-get install python3-tk
+```
+
+See [GUI_README.md](GUI_README.md) for detailed GUI documentation.
+
+### Quick Start (CLI)
 
 **Start the server:**
 ```bash
@@ -278,10 +318,14 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Future Enhancements
 
 - ~~File download functionality~~ ✓ Implemented
+- ~~GUI applications~~ ✓ Implemented
 - Multi-threaded server support
+- Full drag-and-drop support in GUI (with tkinterdnd2)
 - Web-based user interface
 - Database integration for user management
 - File compression before encryption
 - Rate limiting and DDoS protection
 - File versioning and metadata
 - Automated file cleanup policies
+- Bandwidth monitoring and throttling
+- Multi-file batch operations
