@@ -62,7 +62,20 @@ SecureFileX is a comprehensive secure file transfer system designed to ensure th
 
 ## Usage
 
-### Quick Start Demo
+### Quick Start
+
+The easiest way to get started:
+```bash
+python quickstart.py
+```
+
+This interactive script will:
+- Check and install dependencies
+- Set up directories
+- Create default admin user
+- Provide a menu to launch any component
+
+### Demo
 
 Run the demo script to see all features:
 ```bash
