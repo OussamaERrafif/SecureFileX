@@ -80,6 +80,16 @@ def run_client(args):
             success = client.upload_file(args.upload_file)
             client.disconnect()
             return 0 if success else 1
+        # Handle specific file download if provided
+        elif args.download_file:
+            success = client.download_file(args.download_file)
+            client.disconnect()
+            return 0 if success else 1
+        # Handle list files if provided
+        elif args.list_files:
+            client.list_files()
+            client.disconnect()
+            return 0
         else:
             # Interactive mode
             client.interactive_mode()
@@ -188,6 +198,10 @@ Examples:
     client_parser.add_argument('--port', type=int, help='Server port number')
     client_parser.add_argument('--upload', dest='upload_file', 
                               help='Upload a file and exit (non-interactive)')
+    client_parser.add_argument('--download', dest='download_file',
+                              help='Download a file and exit (non-interactive)')
+    client_parser.add_argument('--list', dest='list_files', action='store_true',
+                              help='List available files and exit (non-interactive)')
     
     # Config command
     config_parser = subparsers.add_parser('config', help='Configuration management')

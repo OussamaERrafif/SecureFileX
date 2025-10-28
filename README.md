@@ -15,6 +15,8 @@ SecureFileX is a comprehensive secure file transfer system designed to ensure th
 ### 📁 File Transfer
 - **Chunked Transfer**: Memory-efficient file transfer with progress monitoring
 - **Large File Support**: Configurable file size limits (default: 100MB)
+- **Upload & Download**: Full bidirectional file transfer support
+- **File Listing**: Browse available files on the server
 - **Integrity Checking**: Automatic verification of file integrity after transfer
 - **Safe File Handling**: Secure file path validation and sanitization
 
@@ -88,6 +90,12 @@ python securefx.py client
 # Upload a file directly
 python securefx.py client --upload myfile.txt
 
+# Download a file directly
+python securefx.py client --download myfile.txt
+
+# List available files
+python securefx.py client --list
+
 # Connect to specific server
 python securefx.py client --host 192.168.1.100 --port 8080
 ```
@@ -114,6 +122,8 @@ python securefx.py user list
 
 In interactive mode, the client supports these commands:
 - `upload <file_path>` - Upload a file to the server
+- `download <filename>` - Download a file from the server
+- `list` - List all available files on the server
 - `message <text>` - Send a text message to the server
 - `quit` - Exit the client
 
@@ -250,9 +260,11 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Future Enhancements
 
-- File download functionality
+- ~~File download functionality~~ ✓ Implemented
 - Multi-threaded server support
 - Web-based user interface
 - Database integration for user management
 - File compression before encryption
 - Rate limiting and DDoS protection
+- File versioning and metadata
+- Automated file cleanup policies

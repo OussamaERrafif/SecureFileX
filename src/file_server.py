@@ -109,8 +109,12 @@ class SecureFileTransferServer(AuthenticationMixin):
                     })
                     break
                 
-                if command == 'UPLOAD':
+                elif command == 'UPLOAD':
                     self.handle_file_upload(conn, aes_cipher, command_data, username, client_ip)
+                elif command == 'DOWNLOAD':
+                    self.handle_file_download(conn, aes_cipher, command_data, username, client_ip)
+                elif command == 'LIST':
+                    self.handle_list_files(conn, aes_cipher, username, client_ip)
                 elif command == 'MESSAGE':
                     self.handle_message(conn, aes_cipher, command_data, username, client_ip)
                 elif command == 'QUIT':
@@ -198,6 +202,92 @@ class SecureFileTransferServer(AuthenticationMixin):
             self.logger.file_operation('UPLOAD', safe_filename, username, False, file_size)
             self.logger.error(f"File write error for {safe_filename}: {e}")
             self.send_response(conn, aes_cipher, {'status': 'error', 'message': f'File write error: {e}'})
+    
+    def handle_message(self, conn, aes_cipher, command_data, username, client_ip):
+        """Handle text message from authenticated client."""
+        message = command_data.get('message', '')
+        self.logger.info(f"Message from user '{username}': {message}")
+        print(f"Message from user '{username}': {message}")
+        self.send_response(conn, aes_cipher, {'status': 'success', 'message': 'Message received'})
+    
+    def handle_list_files(self, conn, aes_cipher, username, client_ip):
+        """List available files in the upload directory."""
+        try:
+            files = []
+            if os.path.exists(self.upload_dir):
+                for filename in os.listdir(self.upload_dir):
+                    file_path = os.path.join(self.upload_dir, filename)
+                    if os.path.isfile(file_path):
+                        file_size = os.path.getsize(file_path)
+                        files.append({
+                            'filename': filename,
+                            'size': file_size
+                        })
+            
+            self.logger.info(f"User '{username}' listed files ({len(files)} files)")
+            self.send_response(conn, aes_cipher, {
+                'status': 'success',
+                'files': files,
+                'count': len(files)
+            })
+        except Exception as e:
+            self.logger.error(f"Error listing files for {username}: {e}")
+            self.send_response(conn, aes_cipher, {'status': 'error', 'message': f'Error listing files: {e}'})
+    
+    def handle_file_download(self, conn, aes_cipher, command_data, username, client_ip):
+        """Handle file download request from authenticated client."""
+        filename = command_data.get('filename')
+        
+        if not filename:
+            self.logger.warning(f"Download failed: missing filename from {username}")
+            self.send_response(conn, aes_cipher, {'status': 'error', 'message': 'Missing filename'})
+            return
+        
+        # Sanitize filename to prevent directory traversal
+        safe_filename = os.path.basename(filename)
+        file_path = os.path.join(self.upload_dir, safe_filename)
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            self.logger.warning(f"Download failed: file not found {safe_filename} for {username}")
+            self.send_response(conn, aes_cipher, {'status': 'error', 'message': 'File not found'})
+            return
+        
+        try:
+            # Calculate file metadata
+            file_size = FileHandler.get_file_size(file_path)
+            file_hash = FileHandler.calculate_file_hash(file_path)
+            
+            self.logger.info(f"User '{username}' downloading file: {safe_filename} ({file_size} bytes)")
+            print(f"User '{username}' downloading file: {safe_filename} ({file_size} bytes)")
+            
+            # Send file metadata
+            self.send_response(conn, aes_cipher, {
+                'status': 'ready',
+                'filename': safe_filename,
+                'file_size': file_size,
+                'file_hash': file_hash
+            })
+            
+            # Send file data in chunks
+            total_sent = 0
+            for chunk in FileHandler.read_file_chunks(file_path, chunk_size=8192):
+                encrypted_chunk = aes_cipher.encrypt(chunk)
+                conn.sendall(encrypted_chunk)
+                total_sent += len(chunk)
+                
+                progress = (total_sent / file_size) * 100
+                print(f"Download progress: {progress:.1f}%", end='\r')
+            
+            print()  # New line after progress
+            
+            self.logger.file_operation('DOWNLOAD', safe_filename, username, True, file_size)
+            print(f"File {safe_filename} downloaded successfully by {username}")
+            
+        except Exception as e:
+            self.logger.file_operation('DOWNLOAD', safe_filename, username, False, 0)
+            self.logger.error(f"Download error for {safe_filename}: {e}")
+            print(f"Error during download: {e}")
     
     def handle_message(self, conn, aes_cipher, command_data, username, client_ip):
         """Handle text message from authenticated client."""

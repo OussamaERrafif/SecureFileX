@@ -215,13 +215,132 @@ class SecureFileTransferClient:
         else:
             print(f"✗ Error: {response.get('message', 'Unknown error')}")
     
+    def list_files(self):
+        """List available files on the server."""
+        list_command = {'command': 'LIST'}
+        self.send_command(list_command)
+        
+        response = self.receive_response()
+        if response.get('status') == 'success':
+            files = response.get('files', [])
+            if files:
+                print(f"\nAvailable files ({response.get('count', 0)}):")
+                print(f"{'Filename':<40} {'Size':<15}")
+                print("-" * 55)
+                for file_info in files:
+                    filename = file_info['filename']
+                    size = file_info['size']
+                    size_str = self._format_size(size)
+                    print(f"{filename:<40} {size_str:<15}")
+            else:
+                print("No files available on server")
+        else:
+            print(f"✗ Error: {response.get('message', 'Unknown error')}")
+    
+    def download_file(self, filename, save_path=None):
+        """Download a file from the server with integrity verification."""
+        try:
+            # Use filename as save path if not specified
+            if save_path is None:
+                save_path = filename
+            
+            self.logger.info(f"Requesting download: {filename}")
+            print(f"Downloading {filename}...")
+            
+            # Send download command
+            download_command = {
+                'command': 'DOWNLOAD',
+                'filename': filename
+            }
+            self.send_command(download_command)
+            
+            # Wait for server response with file metadata
+            response = self.receive_response()
+            if response.get('status') != 'ready':
+                self.logger.error(f"Download failed: {response.get('message')}")
+                print(f"✗ Download failed: {response.get('message', 'Unknown error')}")
+                return False
+            
+            file_size = response.get('file_size')
+            expected_hash = response.get('file_hash')
+            
+            print(f"File size: {self._format_size(file_size)}")
+            print(f"File hash: {expected_hash}")
+            
+            # Receive file chunks
+            received_chunks = []
+            total_received = 0
+            
+            while total_received < file_size:
+                encrypted_chunk = self.socket.recv(8192)
+                if not encrypted_chunk:
+                    break
+                
+                decrypted_chunk = self.aes_cipher.decrypt(encrypted_chunk)
+                received_chunks.append(decrypted_chunk)
+                total_received += len(decrypted_chunk)
+                
+                progress = (total_received / file_size) * 100
+                print(f"Download progress: {progress:.1f}%", end='\r')
+            
+            print()  # New line after progress
+            
+            # Write file
+            try:
+                FileHandler.write_file_chunks(save_path, received_chunks)
+                
+                # Verify file integrity
+                if FileHandler.verify_file_integrity(save_path, expected_hash):
+                    self.logger.info(f"Download successful: {filename}")
+                    print(f"✓ File {filename} downloaded and verified successfully")
+                    return True
+                else:
+                    os.remove(save_path)  # Remove corrupted file
+                    self.logger.error(f"Download failed: integrity verification failed for {filename}")
+                    print(f"✗ Download failed: File integrity verification failed")
+                    return False
+                    
+            except Exception as e:
+                self.logger.error(f"Error writing downloaded file {filename}: {e}")
+                print(f"✗ Error writing file: {e}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error downloading file {filename}: {e}")
+            print(f"✗ Error downloading file: {e}")
+            return False
+    
+    def _format_size(self, size_bytes):
+        """Format file size in human-readable format."""
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size_bytes < 1024.0:
+                return f"{size_bytes:.2f} {unit}"
+            size_bytes /= 1024.0
+        return f"{size_bytes:.2f} TB"
+    
+    def send_message(self, message):
+        """Send a text message to the server."""
+        message_command = {
+            'command': 'MESSAGE',
+            'message': message
+        }
+        self.send_command(message_command)
+        
+        response = self.receive_response()
+        if response.get('status') == 'success':
+            print(f"✓ {response.get('message', 'Message sent')}")
+        else:
+            print(f"✗ Error: {response.get('message', 'Unknown error')}")
+    
     def interactive_mode(self):
         """Run client in interactive mode."""
         print(f"\nSecureFileX Client - Welcome {self.username}")
         print("Commands:")
-        print("  upload <file_path> - Upload a file")
-        print("  message <text>     - Send a text message")
-        print("  quit               - Exit client")
+        print("  upload <file_path>     - Upload a file")
+        print("  download <filename>    - Download a file")
+        print("  list                   - List available files")
+        print("  message <text>         - Send a text message")
+        print("  quit                   - Exit client")
         print()
         
         while True:
@@ -241,6 +360,14 @@ class SecureFileTransferClient:
                         self.upload_file(file_path)
                     else:
                         print("Usage: upload <file_path>")
+                elif command == 'download':
+                    if len(parts) > 1:
+                        filename = parts[1].strip()
+                        self.download_file(filename)
+                    else:
+                        print("Usage: download <filename>")
+                elif command == 'list':
+                    self.list_files()
                 elif command == 'message':
                     if len(parts) > 1:
                         message = parts[1]
