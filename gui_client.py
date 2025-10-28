@@ -446,6 +446,22 @@ class SecureFileXGUI:
         
         # Bind double-click to download
         self.file_listbox.bind('<Double-Button-1>', lambda e: self.download_file_dialog())
+        
+        # Add drop zone for file uploads
+        drop_frame = ttk.LabelFrame(right_panel, text="Quick Upload (Drag & Drop)", padding=5)
+        drop_frame.pack(fill=tk.X, pady=5)
+        
+        drop_label = ttk.Label(drop_frame, 
+                              text="📎 Drop files here to upload\n(Feature requires tkinterdnd2)",
+                              justify=tk.CENTER, 
+                              background='#f0f0f0',
+                              relief=tk.RIDGE,
+                              padding=10)
+        drop_label.pack(fill=tk.BOTH, expand=True)
+        
+        # Note: Actual drag-and-drop would require tkinterdnd2 package
+        # For now, this is a visual placeholder
+        drop_label.bind('<Button-1>', lambda e: self.upload_file())
     
     def create_console_frame(self):
         """Create console output frame"""
