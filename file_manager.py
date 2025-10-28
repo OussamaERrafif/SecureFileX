@@ -95,7 +95,7 @@ class FileManager:
         stats = {
             'count': len(files),
             'total_size': sum(sizes),
-            'average_size': sum(sizes) // len(sizes),
+            'average_size': sum(sizes) / len(sizes),
             'largest_file': max(files, key=lambda x: x['size']),
             'smallest_file': min(files, key=lambda x: x['size']),
         }
@@ -123,22 +123,38 @@ class FileManager:
         """Verify file integrity using stored hashes"""
         print("\n=== File Integrity Check ===")
         
-        files = self.list_files(detailed=True)
+        # Get files without detailed hash first
+        all_files = self.list_files(detailed=False)
         
         if filename:
-            files = [f for f in files if f['filename'] == filename]
-            if not files:
+            all_files = [f for f in all_files if f['filename'] == filename]
+            if not all_files:
                 print(f"File not found: {filename}")
                 return
         
-        for file_info in files:
+        verified_count = 0
+        failed_count = 0
+        
+        for file_info in all_files:
             filepath = os.path.join(self.upload_dir, file_info['filename'])
             current_hash = FileHandler.calculate_file_hash(filepath)
             
             print(f"\n{file_info['filename']}:")
             print(f"  Hash: {current_hash}")
             print(f"  Size: {self._format_size(file_info['size'])}")
-            print(f"  Status: ✓ Valid")
+            
+            # Note: Without stored hashes, we just verify the file exists and is readable
+            # In a production system, you would compare against stored hashes
+            if current_hash:
+                print(f"  Status: ✓ Valid (file readable and hash computed)")
+                verified_count += 1
+            else:
+                print(f"  Status: ✗ Failed (unable to compute hash)")
+                failed_count += 1
+        
+        print(f"\n=== Summary ===")
+        print(f"Verified: {verified_count}")
+        print(f"Failed: {failed_count}")
     
     def clean_old_files(self, days=30, dry_run=True):
         """Remove files older than specified days"""

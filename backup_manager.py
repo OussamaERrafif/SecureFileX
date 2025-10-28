@@ -54,12 +54,12 @@ class BackupManager:
             
             # Create tar.gz archive
             with tarfile.open(backup_path, "w:gz") as tar:
-                # Add manifest
-                manifest_path = os.path.join(self.backup_dir, f"{backup_name}_manifest.json")
-                with open(manifest_path, 'w') as f:
-                    json.dump(manifest, f, indent=2)
-                tar.add(manifest_path, arcname='manifest.json')
-                os.remove(manifest_path)
+                # Add manifest directly to archive
+                import io
+                manifest_json = json.dumps(manifest, indent=2).encode('utf-8')
+                manifest_info = tarfile.TarInfo(name='manifest.json')
+                manifest_info.size = len(manifest_json)
+                tar.addfile(manifest_info, io.BytesIO(manifest_json))
                 
                 # Add all files from upload directory
                 for filename in os.listdir(self.upload_dir):
@@ -118,6 +118,9 @@ class BackupManager:
                 
                 # Extract files
                 print("\nRestoring files:")
+                restored_count = 0
+                skipped_count = 0
+                
                 for member in tar.getmembers():
                     if member.name == 'manifest.json':
                         continue
@@ -127,12 +130,17 @@ class BackupManager:
                     # Check if file exists
                     if os.path.exists(dest_path) and not overwrite:
                         print(f"  ⊗ Skipped (exists): {member.name}")
+                        skipped_count += 1
                         continue
                     
                     tar.extract(member, path=self.upload_dir)
                     print(f"  ✓ Restored: {member.name}")
+                    restored_count += 1
                 
                 print(f"\n✓ Restore completed successfully")
+                print(f"  Restored: {restored_count} files")
+                if skipped_count > 0:
+                    print(f"  Skipped: {skipped_count} files (already exist)")
                 return True
                 
         except Exception as e:
